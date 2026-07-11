@@ -74,6 +74,7 @@ export function WorkspaceView({
       const data = await res.json();
       setDocuments(data.documents ?? data);
       setRecent(data.recentlyViewed ?? []);
+      setPinnedIds(new Set(data.pinnedDocumentIds ?? []));
     }
     setLoading(false);
   }, [workspaceId, search]);
@@ -210,9 +211,15 @@ export function WorkspaceView({
               </a>
             </Button>
           )}
-          <kbd className="hidden rounded border border-graphite/20 px-2 py-0.5 font-mono text-xs text-graphite md:inline">
-            ⌘K
-          </kbd>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPaletteOpen(true)}
+          >
+            <kbd className="rounded border border-graphite/20 px-2 py-0.5 font-mono text-xs text-graphite">
+              ⌘K
+            </kbd>
+          </Button>
         </div>
       </header>
 

@@ -45,7 +45,19 @@ export async function GET(
       take: 5,
     });
 
-    return NextResponse.json({ documents, recentlyViewed: recent.map((r) => r.document) });
+    const pinnedDocuments = await db.pinnedDocument.findMany({
+      where: {
+        userId: session.user.id,
+        document: { workspaceId: id, deletedAt: null },
+      },
+      select: { documentId: true },
+    });
+
+    return NextResponse.json({
+      documents,
+      recentlyViewed: recent.map((r) => r.document),
+      pinnedDocumentIds: pinnedDocuments.map((pin) => pin.documentId),
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

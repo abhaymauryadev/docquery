@@ -18,7 +18,7 @@ export function TraceRail({
 
   return (
     <div
-      className={cn("relative w-2 flex-shrink-0", className)}
+      className={cn("relative w-2 shrink-0", className)}
       aria-label="Citation trace rail"
     >
       <div className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-signal/30" />
