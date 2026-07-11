@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-paper: #f1f2ef;
+  --color-ink: #161a1f;
+  --color-graphite: #5b6167;
+  --color-signal: #3557d6;
+  --color-verified: #2e8b57;
+  --color-steady: #c98a2c;
+  --color-flag: #c4573f;
+  --color-surface-0: #1b1f26;
+  --color-surface-1: #22262e;
+  --color-signal-dark: #6c87e8;
+
+  --font-display: var(--font-newsreader);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  --radius-input: 6px;
+  --radius-default: 8px;
+  --radius-card: 12px;
+  --radius-pill: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #1b1f26;
+    --color-ink: #edeeef;
+    --color-graphite: #9ca3af;
+    --color-signal: #6c87e8;
+    --color-verified: #3da870;
+    --color-steady: #d9a040;
+    --color-flag: #d46850;
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
