@@ -23,26 +23,23 @@ async function parsePdf(buffer: Buffer): Promise<ParsedDocument> {
   const parser = new PDFParse({ data: buffer });
 
   try {
-    const data = await parser.getText();
+    const result = await parser.getText();
 
-    if (!data.text?.trim()) {
+    if (!result.text?.trim()) {
       throw new Error(
         "No extractable text — this looks like a scanned document.",
       );
     }
 
-    const pages: ParsedDocument["pages"] = data.pages
-      .map((page) => ({
-        pageNumber: page.num,
-        text: page.text.trim(),
-      }))
+    const pages: ParsedDocument["pages"] = result.pages
+      .map((page) => ({ pageNumber: page.num, text: page.text.trim() }))
       .filter((page) => page.text);
 
     if (pages.length === 0) {
-      pages.push({ pageNumber: 1, text: data.text.trim() });
+      pages.push({ pageNumber: 1, text: result.text.trim() });
     }
 
-    return { pages, fullText: data.text.trim() };
+    return { pages, fullText: result.text.trim() };
   } finally {
     await parser.destroy();
   }

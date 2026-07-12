@@ -43,7 +43,10 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col font-sans antialiased">
+      <body
+        className="min-h-full flex flex-col font-sans antialiased"
+        suppressHydrationWarning
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

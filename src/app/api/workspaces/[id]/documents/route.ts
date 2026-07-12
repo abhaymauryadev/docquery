@@ -70,6 +70,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let documentId: string | null = null;
+
   try {
     const rateLimited = rateLimit(request as never, "upload", 10, 60_000);
     if (rateLimited) return rateLimited;
@@ -108,6 +110,7 @@ export async function POST(
         status: "PENDING",
       },
     });
+    documentId = document.id;
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const fileUrl = await uploadFile(id, document.id, file.name, buffer);
@@ -138,6 +141,20 @@ export async function POST(
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+
+    if (documentId) {
+      await db.document.delete({ where: { id: documentId } }).catch((cleanupError) => {
+        console.error(
+          "[POST /api/workspaces/[id]/documents] failed to remove incomplete document:",
+          cleanupError,
+        );
+      });
+    }
+
+    console.error("[POST /api/workspaces/[id]/documents] error:", error);
+    return NextResponse.json(
+      { error: "Upload failed. Please try again." },
+      { status: 500 },
+    );
   }
 }

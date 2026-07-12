@@ -45,6 +45,24 @@ export async function GET(
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
+    if (isMissingFileError(error)) {
+      return NextResponse.json(
+        {
+          error:
+            "The original file is no longer available. Re-upload the document to view it.",
+        },
+        { status: 410 },
+      );
+    }
+    console.error("[/api/documents/[id]/content] 500 error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
+}
+
+function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    error.code === "ENOENT"
+  );
 }

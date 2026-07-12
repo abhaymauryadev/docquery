@@ -63,6 +63,7 @@ export function WorkspaceView({
     null,
   );
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const fetchDocuments = useCallback(async () => {
     const params = new URLSearchParams();
@@ -104,17 +105,31 @@ export function WorkspaceView({
     if (!file) return;
 
     setUploading(true);
+    setUploadError(null);
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`/api/workspaces/${workspaceId}/documents`, {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/documents`, {
+        method: "POST",
+        body: formData,
+      });
 
-    setUploading(false);
-    if (res.ok) await fetchDocuments();
-    e.target.value = "";
+      if (res.ok) {
+        await fetchDocuments();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const msg = data?.error ?? `Upload failed (${res.status})`;
+        console.error("[upload] error:", res.status, data);
+        setUploadError(msg);
+      }
+    } catch (err) {
+      console.error("[upload] network error:", err);
+      setUploadError("Network error — please try again.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   }
 
   async function handlePin(docId: string) {
@@ -243,6 +258,9 @@ export function WorkspaceView({
                 disabled={uploading}
               />
             </label>
+            {uploadError && (
+              <p className="mt-1 text-xs text-flag px-1">{uploadError}</p>
+            )}
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {loading ? (
@@ -385,10 +403,12 @@ function DocumentViewer({
       setError("");
       const res = await fetch(`/api/documents/${documentId}/content`);
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setError(
-          res.status === 404
-            ? "Source no longer available."
-            : "Failed to load document.",
+          data.error ??
+            (res.status === 404 || res.status === 410
+              ? "Source no longer available."
+              : "Failed to load document."),
         );
         return;
       }

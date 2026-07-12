@@ -41,25 +41,27 @@ export async function processDocument(documentId: string): Promise<void> {
       const batch = textChunks.slice(i, i + batchSize);
       const embeddings = await embedTexts(batch.map((c) => c.content));
 
-      for (let j = 0; j < batch.length; j++) {
-        const chunk = batch[j];
-        const embedding = embeddings[j];
-        const vectorStr = `[${embedding.join(",")}]`;
+      const values = batch.map((chunk, j) => {
+        const vectorStr = `[${embeddings[j].join(",")}]`;
 
-        await db.$executeRaw`
+        return Prisma.sql`(
+          ${`chunk_${documentId}_${i + j}`},
+          ${documentId},
+          ${chunk.content},
+          ${vectorStr}::vector,
+          ${chunk.pageNumber},
+          ${chunk.charStart},
+          ${chunk.charEnd},
+          NOW()
+        )`;
+      });
+
+      await db.$executeRaw(
+        Prisma.sql`
           INSERT INTO "Chunk" ("id", "documentId", "content", "embedding", "pageNumber", "charStart", "charEnd", "createdAt")
-          VALUES (
-            ${`chunk_${documentId}_${i + j}`},
-            ${documentId},
-            ${chunk.content},
-            ${vectorStr}::vector,
-            ${chunk.pageNumber},
-            ${chunk.charStart},
-            ${chunk.charEnd},
-            NOW()
-          )
-        `;
-      }
+          VALUES ${Prisma.join(values)}
+        `,
+      );
     }
 
     await db.document.update({
