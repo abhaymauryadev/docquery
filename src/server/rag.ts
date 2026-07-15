@@ -8,6 +8,7 @@ import {
 } from "@/lib/rag/chunking";
 import { parseDocument } from "@/lib/rag/parser";
 import { downloadFile } from "@/lib/storage";
+import { generateWithGemini } from "@/lib/gemini";
 import type { Citation, RetrievedChunk } from "@/types";
 import OpenAI from "openai";
 
@@ -171,20 +172,11 @@ export async function queryWorkspace(
     )
     .join("\n\n---\n\n");
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Context:\n${context}\n\nQuestion: ${question}`,
-      },
-    ],
-    temperature: 0.1,
-  });
-
-  const answer = completion.choices[0]?.message?.content ?? "";
+  const answer = await generateText(
+    SYSTEM_PROMPT,
+    `Context:\n${context}\n\nQuestion: ${question}`,
+    { temperature: 0.1 },
+  );
   const citations = extractCitations(answer, chunks);
 
   return { answer, confidence, citations };
@@ -229,33 +221,48 @@ export async function generateFollowUps(
   question: string,
   answer: string,
 ): Promise<string[]> {
-  if (!process.env.OPENAI_API_KEY) return [];
-
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content:
-          "Generate exactly 3 short follow-up questions based on the Q&A. Return JSON array of strings only.",
-      },
-      {
-        role: "user",
-        content: `Question: ${question}\nAnswer: ${answer}`,
-      },
-    ],
-    temperature: 0.5,
-    response_format: { type: "json_object" },
-  });
+  if (!process.env.GEMINI_API_KEY && !process.env.OPENAI_API_KEY) return [];
 
   try {
-    const content = completion.choices[0]?.message?.content ?? "{}";
+    const content = await generateText(
+      "Generate exactly 3 short follow-up questions based on the Q&A. Return a JSON object with a questions array of strings only.",
+      `Question: ${question}\nAnswer: ${answer}`,
+      { temperature: 0.5, responseMimeType: "application/json" },
+    );
     const parsed = JSON.parse(content) as { questions?: string[] };
     return (parsed.questions ?? []).slice(0, 3);
   } catch {
     return [];
   }
+}
+
+async function generateText(
+  systemInstruction: string,
+  prompt: string,
+  options: { temperature: number; responseMimeType?: string },
+): Promise<string> {
+  if (process.env.GEMINI_API_KEY) {
+    return generateWithGemini(systemInstruction, prompt, options);
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("No chat provider configured. Set GEMINI_API_KEY or OPENAI_API_KEY.");
+  }
+
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: prompt },
+    ],
+    temperature: options.temperature,
+    ...(options.responseMimeType
+      ? { response_format: { type: "json_object" as const } }
+      : {}),
+  });
+
+  return completion.choices[0]?.message?.content ?? "";
 }
 
 export async function logQuery(

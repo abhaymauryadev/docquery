@@ -33,14 +33,18 @@ Open [http://localhost:3000](http://localhost:3000).
 | `AUTH_SECRET` | Yes | NextAuth session secret (`openssl rand -base64 32`) |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No | Google OAuth |
 | `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | No | GitHub OAuth |
-| `OPENAI_API_KEY` | Yes* | LLM + fallback embeddings |
+| `GEMINI_API_KEY` | Yes* | Gemini chat and embeddings |
+| `GEMINI_CHAT_MODEL` | No | Gemini chat model (default: `gemini-3.5-flash`) |
+| `OPENAI_API_KEY` | Yes* | OpenAI chat and fallback embeddings |
 | `VOYAGE_API_KEY` | No | Preferred embedding provider |
 | `NEXT_PUBLIC_SUPABASE_URL` | No | Supabase Storage URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Supabase service key |
 | `SUPABASE_STORAGE_BUCKET` | No | Storage bucket (default: `documents`) |
 | `NEXT_PUBLIC_APP_URL` | Yes | Public app URL for auth callbacks |
+| `RESEND_API_KEY` | No | Sends signup verification emails; without it, the link is logged to the server console |
+| `EMAIL_FROM` | No | Verification email sender (default: `DocQuery <onboarding@resend.dev>`) |
 
-\* Required unless only using Voyage for embeddings and another LLM is configured.
+\* Configure either Gemini or OpenAI for chat. Gemini, Voyage, or OpenAI can provide embeddings.
 
 ## Architecture
 

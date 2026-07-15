@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { embedWithGemini } from "@/lib/gemini";
 
 const EMBEDDING_DIMENSION = 1024;
 
@@ -12,6 +13,10 @@ function getOpenAI(): OpenAI {
 }
 
 export async function embedTexts(texts: string[]): Promise<number[][]> {
+  if (process.env.GEMINI_API_KEY) {
+    return embedWithGemini(texts, "RETRIEVAL_DOCUMENT", EMBEDDING_DIMENSION);
+  }
+
   if (process.env.VOYAGE_API_KEY) {
     const response = await fetch("https://api.voyageai.com/v1/embeddings", {
       method: "POST",
@@ -46,10 +51,20 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
     return response.data.map((d) => d.embedding);
   }
 
-  throw new Error("No embedding provider configured. Set VOYAGE_API_KEY or OPENAI_API_KEY.");
+  throw new Error(
+    "No embedding provider configured. Set GEMINI_API_KEY, VOYAGE_API_KEY, or OPENAI_API_KEY.",
+  );
 }
 
 export async function embedQuery(text: string): Promise<number[]> {
+  if (process.env.GEMINI_API_KEY) {
+    return (await embedWithGemini(
+      [text],
+      "RETRIEVAL_QUERY",
+      EMBEDDING_DIMENSION,
+    ))[0];
+  }
+
   if (process.env.VOYAGE_API_KEY) {
     const response = await fetch("https://api.voyageai.com/v1/embeddings", {
       method: "POST",

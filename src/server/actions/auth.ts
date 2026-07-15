@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { sendVerificationEmail } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { signupSchema } from "@/lib/validators";
 import { randomBytes } from "crypto";
@@ -46,12 +47,8 @@ export async function signupAction(formData: FormData) {
     },
   });
 
-  // In production, send verification email. For dev, log the link.
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      `Verify email: ${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${token}&email=${encodeURIComponent(parsed.data.email)}`,
-    );
-  }
+  const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${token}&email=${encodeURIComponent(parsed.data.email)}`;
+  await sendVerificationEmail(parsed.data.email, verifyUrl);
 
   return { success: true };
 }
