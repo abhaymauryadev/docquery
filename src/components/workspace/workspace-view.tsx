@@ -85,6 +85,16 @@ export function WorkspaceView({
     return () => clearTimeout(timer);
   }, [fetchDocuments, search]);
 
+  const hasActiveProcessing = documents.some(
+    (doc) => doc.status === "PENDING" || doc.status === "PROCESSING",
+  );
+
+  useEffect(() => {
+    if (!hasActiveProcessing) return;
+    const interval = setInterval(fetchDocuments, 3000);
+    return () => clearInterval(interval);
+  }, [hasActiveProcessing, fetchDocuments]);
+
   useEffect(() => {
     async function initConversation() {
       const res = await fetch(`/api/workspaces/${workspaceId}/conversations`, {
