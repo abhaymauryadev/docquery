@@ -37,7 +37,7 @@ export function CommandPalette({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-ink/40 pt-[20vh]">
       <Command
-        className="w-full max-w-lg overflow-hidden rounded-[var(--radius-card)] border border-graphite/10 bg-white shadow-xl dark:bg-surface-1"
+        className="w-full max-w-lg overflow-hidden rounded-(--radius-card) border border-graphite/10 bg-white shadow-xl dark:bg-surface-1"
         label="Command palette"
       >
         <Command.Input
@@ -58,7 +58,7 @@ export function CommandPalette({
                   router.push(`/workspace/${ws.id}`);
                   onOpenChange(false);
                 }}
-                className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-default)] px-3 py-2 text-sm aria-selected:bg-signal/10"
+                className="flex cursor-pointer items-center gap-2 rounded-(--radius-default) px-3 py-2 text-sm aria-selected:bg-signal/10"
               >
                 <FolderOpen className="h-4 w-4 text-graphite" />
                 {ws.name}
@@ -77,7 +77,7 @@ export function CommandPalette({
                   );
                   onOpenChange(false);
                 }}
-                className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-default)] px-3 py-2 text-sm aria-selected:bg-signal/10"
+                className="flex cursor-pointer items-center gap-2 rounded-(--radius-default) px-3 py-2 text-sm aria-selected:bg-signal/10"
               >
                 <FileText className="h-4 w-4 text-graphite" />
                 {doc.filename}
@@ -90,7 +90,7 @@ export function CommandPalette({
               value="new chat"
               onSelect={() => {
                 const ws = workspaces[0];
-                if (ws) router.push(`/workspace/${ws.id}/chat`);
+                if (ws) router.push(`/workspace/${ws.id}`);
                 onOpenChange(false);
               }}
               className="flex cursor-pointer items-center gap-2 rounded-[var(--radius-default)] px-3 py-2 text-sm aria-selected:bg-signal/10"

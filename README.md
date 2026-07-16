@@ -1,32 +1,33 @@
 # DocQuery
 
-**Ask your documents, get sentence-level answers.**
+> Ask your documents, get sentence-level answers with exact citations — no hallucinated guesses.
 
-Upload PDFs, DOCX, or text files and get answers with exact citations — down to the sentence. No hallucinated guesses.
+![Hero screenshot](docs/screenshots/hero.png)
 
-## Live demo
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)  **Live demo →** set `NEXT_PUBLIC_APP_URL` after deploy and link it here.
 
-Set `NEXT_PUBLIC_APP_URL` after deploy and link it here.
+## Features
+- Upload PDFs, DOCX, and text files into a workspace
+- Answers cite the exact source sentence, not just the document
+- Background processing pipeline with live status polling
+- Chat over one or many documents per workspace
+- Email/password auth plus Google and GitHub OAuth, with email verification
+- Role-based workspace access (owner / editor / viewer)
+- Pluggable embeddings and chat models (Gemini, OpenAI, or Voyage)
 
-## Screenshots
+## Tech Stack
+Next.js · TypeScript · PostgreSQL + pgvector (Prisma) · Tailwind · Auth.js (NextAuth) · Gemini / OpenAI
 
-Add product screenshots to `docs/screenshots/` after first deploy.
-
-## Quick start
-
+## Quick Start
 ```bash
-git clone <repo-url>
-cd docquery
-cp .env.example .env
+git clone <repo-url> && cd docquery
+cp .env.example .env      # then fill in values
 npm install
 npx prisma db push
-npm run dev
+npm run dev                # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Environment variables
-
+## Environment Variables
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string with pgvector |
@@ -47,28 +48,24 @@ Open [http://localhost:3000](http://localhost:3000).
 \* Configure either Gemini or OpenAI for chat. Gemini, Voyage, or OpenAI can provide embeddings.
 
 ## Architecture
+Uploaded files are parsed, chunked, and embedded into pgvector; chat queries retrieve the nearest chunks and cite the matching sentence back to the user. See [docs/architecture.md](docs/architecture.md) for the full diagram.
 
-See [docs/architecture.md](docs/architecture.md).
-
-## Scripts
-
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server |
-| `npm run build` | Generate Prisma client + production build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript check |
-| `npm run test` | Vitest unit tests |
-| `npm run db:push` | Push schema to database |
+## Testing
+```bash
+npm run lint        # ESLint
+npm run typecheck   # TypeScript
+npm run test        # Vitest unit tests
+```
 
 ## Roadmap
+- [ ] Multi-document comparison / cross-referencing queries
+- [ ] Shared read-only workspace link
+- [ ] Highlight-to-ask in document viewer
+- [ ] OCR fallback for scanned PDFs
+- [ ] Role-based workspace invite UI (EDITOR/VIEWER)
 
-- Multi-document comparison / cross-referencing queries
-- Shared read-only workspace link
-- Highlight-to-ask in document viewer
-- OCR fallback for scanned PDFs
-- Role-based workspace invite UI (EDITOR/VIEWER)
+## Screenshots
+Add product screenshots to `docs/screenshots/` covering upload, chat, and citation views.
 
 ## License
-
 MIT — see [LICENSE](LICENSE).
