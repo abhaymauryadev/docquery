@@ -1,20 +1,24 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   --color-paper: #f1f2ef;
+  --color-card: #ffffff;
+  --color-raise: #f7f8f6;
   --color-ink: #161a1f;
   --color-graphite: #5b6167;
+  --color-faint: #8a9097;
   --color-signal: #3557d6;
+  --color-signal-tint: rgba(53, 87, 214, 0.1);
+  --color-signal-ring: rgba(53, 87, 214, 0.35);
   --color-verified: #2e8b57;
   --color-steady: #c98a2c;
   --color-flag: #c4573f;
+  --color-border: rgba(91, 97, 103, 0.2);
+  --color-border-strong: rgba(91, 97, 103, 0.34);
+  --color-hair: rgba(91, 97, 103, 0.12);
+  --color-skel: rgba(91, 97, 103, 0.13);
   --color-surface-0: #1b1f26;
   --color-surface-1: #22262e;
-  --color-signal-dark: #6c87e8;
-
-  --font-display: var(--font-newsreader);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains);
 
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -29,17 +33,61 @@
   --radius-default: 8px;
   --radius-card: 12px;
   --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(22, 26, 31, 0.05), 0 1px 3px rgba(22, 26, 31, 0.05);
+  --shadow-md: 0 2px 4px rgba(22, 26, 31, 0.05), 0 8px 24px rgba(22, 26, 31, 0.07);
+  --shadow-lg: 0 8px 16px rgba(22, 26, 31, 0.08), 0 24px 60px rgba(22, 26, 31, 0.14);
+
+  --animate-float: dq-float 3s ease-in-out infinite;
+  --animate-pulse-soft: dq-pulse 1.6s infinite;
+  --animate-blink: dq-blink 1.6s infinite;
+  --animate-grow: dq-grow 2.6s ease-in-out infinite alternate;
+}
+
+@theme inline {
+  --font-display: var(--font-newsreader);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+}
+
+@keyframes dq-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes dq-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes dq-blink {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@keyframes dq-grow {
+  0% { width: 12%; }
+  100% { width: 94%; }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --color-paper: #1b1f26;
-    --color-ink: #edeeef;
-    --color-graphite: #9ca3af;
+    --color-card: #22262e;
+    --color-raise: #2a2f38;
+    --color-ink: rgba(237, 238, 239, 0.87);
+    --color-graphite: rgba(237, 238, 239, 0.55);
+    --color-faint: rgba(237, 238, 239, 0.38);
     --color-signal: #6c87e8;
-    --color-verified: #3da870;
-    --color-steady: #d9a040;
-    --color-flag: #d46850;
+    --color-signal-tint: rgba(108, 135, 232, 0.16);
+    --color-signal-ring: rgba(108, 135, 232, 0.45);
+    --color-verified: #4fb07a;
+    --color-steady: #d8a24a;
+    --color-flag: #d8705c;
+    --color-border: rgba(237, 238, 239, 0.12);
+    --color-border-strong: rgba(237, 238, 239, 0.2);
+    --color-hair: rgba(237, 238, 239, 0.07);
+    --color-skel: rgba(237, 238, 239, 0.08);
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.45);
   }
 }
 
