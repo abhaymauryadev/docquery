@@ -38,3 +38,25 @@ export function DocumentListSkeleton() {
     </div>
   );
 }
+
+export function AnalyticsSkeleton() {
+  return (
+    <div className="space-y-6" aria-label="Loading analytics">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-[var(--radius-card)] border border-graphite/10 p-4"
+          >
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="mt-2 h-6 w-14" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    </div>
+  );
+}

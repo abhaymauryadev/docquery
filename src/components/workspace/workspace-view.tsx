@@ -9,14 +9,18 @@ import {
   BarChart3,
   ArrowLeft,
   Download,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DocumentRow } from "@/components/workspace/document-row";
-import { DocumentListSkeleton } from "@/components/ui/skeleton";
+import { DocumentListSkeleton, AnalyticsSkeleton, ChatSkeleton } from "@/components/ui/skeleton";
 import { ChatMessage } from "@/components/chat/chat-message";
 import { ChatInput } from "@/components/chat/chat-input";
 import { CommandPalette } from "@/components/workspace/command-palette";
+import { AnalyticsView, type AnalyticsData } from "@/components/workspace/analytics-view";
+import { DocumentViewer } from "@/components/workspace/document-viewer";
+import { cn } from "@/lib/utils";
 import type { Citation } from "@/types";
 import type { Confidence, DocStatus } from "@/types";
 
@@ -35,6 +39,7 @@ interface Message {
   confidence?: Confidence | null;
   citations?: Citation[];
 }
+
 
 interface WorkspaceViewProps {
   workspaceId: string;
@@ -59,11 +64,13 @@ export function WorkspaceView({
   const [asking, setAsking] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [view, setView] = useState<"chat" | "analytics">("chat");
-  const [analytics, setAnalytics] = useState<Record<string, unknown> | null>(
-    null,
-  );
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [mobilePane, setMobilePane] = useState<"documents" | "content">(
+    "documents",
+  );
 
   const fetchDocuments = useCallback(async () => {
     const params = new URLSearchParams();
@@ -192,9 +199,11 @@ export function WorkspaceView({
   }
 
   async function loadAnalytics() {
+    setView("analytics");
+    setAnalyticsLoading(true);
     const res = await fetch(`/api/workspaces/${workspaceId}/analytics`);
     if (res.ok) setAnalytics(await res.json());
-    setView("analytics");
+    setAnalyticsLoading(false);
   }
 
   function handleCitationClick(citation: Citation) {
@@ -220,11 +229,25 @@ export function WorkspaceView({
           <h1 className="font-semibold text-ink">{workspaceName}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setView("chat")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setView("chat");
+              setMobilePane("content");
+            }}
+          >
             <MessageSquare className="h-4 w-4" />
             Chat
           </Button>
-          <Button variant="ghost" size="sm" onClick={loadAnalytics}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              loadAnalytics();
+              setMobilePane("content");
+            }}
+          >
             <BarChart3 className="h-4 w-4" />
             Analytics
           </Button>
@@ -245,11 +268,44 @@ export function WorkspaceView({
               ⌘K
             </kbd>
           </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={`/workspace/${workspaceId}/settings`} aria-label="Workspace settings">
+              <Settings className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </header>
 
+      <div className="flex border-b border-graphite/10 p-2 sm:hidden">
+        {(
+          [
+            { key: "documents", label: "Documents" },
+            { key: "content", label: "Chat" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setMobilePane(tab.key)}
+            className={cn(
+              "flex-1 rounded-[var(--radius-default)] py-1.5 text-sm font-medium transition-colors",
+              mobilePane === tab.key
+                ? "bg-signal-tint text-signal"
+                : "text-graphite",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-80 flex-col border-r border-graphite/10">
+        <aside
+          className={cn(
+            "w-full flex-col border-r border-graphite/10 sm:flex sm:w-80",
+            mobilePane === "documents" ? "flex" : "hidden",
+          )}
+        >
           <div className="border-b border-graphite/10 p-3">
             <Input
               placeholder="Search documents…"
@@ -310,39 +366,27 @@ export function WorkspaceView({
           </div>
         </aside>
 
-        <main className="flex flex-1 flex-col">
-          {view === "analytics" && analytics ? (
-            <div className="flex-1 overflow-y-auto p-6">
-              <h2 className="text-lg font-semibold text-ink">Analytics</h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[
-                  { label: "Docs indexed", value: analytics.docsIndexed },
-                  { label: "Queries this week", value: analytics.queriesThisWeek },
-                  {
-                    label: "Avg response time",
-                    value: `${analytics.avgResponseTimeMs}ms`,
-                  },
-                  {
-                    label: "Avg confidence",
-                    value: analytics.avgConfidence,
-                  },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-[var(--radius-card)] border border-graphite/10 p-4"
-                  >
-                    <p className="text-xs text-graphite">{stat.label}</p>
-                    <p className="mt-1 font-mono text-2xl font-semibold text-ink">
-                      {String(stat.value)}
-                    </p>
-                  </div>
-                ))}
+        <main
+          className={cn(
+            "w-full flex-1 flex-col sm:flex",
+            mobilePane === "content" ? "flex" : "hidden",
+          )}
+        >
+          {view === "analytics" ? (
+            analyticsLoading || !analytics ? (
+              <div className="flex-1 overflow-y-auto p-6">
+                <h2 className="text-lg font-semibold text-ink">Analytics</h2>
+                <div className="mt-6">
+                  <AnalyticsSkeleton />
+                </div>
               </div>
-            </div>
+            ) : (
+              <AnalyticsView analytics={analytics} />
+            )
           ) : (
             <>
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {messages.length === 0 && (
+                {messages.length === 0 && !asking && (
                   <p className="text-center text-graphite">
                     Ask a question about your documents.
                   </p>
@@ -357,6 +401,7 @@ export function WorkspaceView({
                     onCitationClick={handleCitationClick}
                   />
                 ))}
+                {asking && <ChatSkeleton />}
               </div>
               <ChatInput
                 onSubmit={handleAsk}
@@ -368,16 +413,14 @@ export function WorkspaceView({
         </main>
 
         {selectedDocId && (
-          <aside className="w-96 border-l border-graphite/10 overflow-y-auto p-4">
-            <DocumentViewer
-              documentId={selectedDocId}
-              highlight={highlight}
-              onClose={() => {
-                setSelectedDocId(null);
-                setHighlight(null);
-              }}
-            />
-          </aside>
+          <DocumentViewer
+            documentId={selectedDocId}
+            highlight={highlight}
+            onClose={() => {
+              setSelectedDocId(null);
+              setHighlight(null);
+            }}
+          />
         )}
       </div>
 
@@ -391,79 +434,6 @@ export function WorkspaceView({
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
       />
-    </div>
-  );
-}
-
-function DocumentViewer({
-  documentId,
-  highlight,
-  onClose,
-}: {
-  documentId: string;
-  highlight: Citation | null;
-  onClose: () => void;
-}) {
-  const [content, setContent] = useState<string | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    async function load() {
-      setContent(null);
-      setError("");
-      const res = await fetch(`/api/documents/${documentId}/content`);
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(
-          data.error ??
-            (res.status === 404 || res.status === 410
-              ? "Source no longer available."
-              : "Failed to load document."),
-        );
-        return;
-      }
-      const data = await res.json();
-      setContent(data.content);
-    }
-    load();
-  }, [documentId]);
-
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-ink">Document viewer</p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-xs text-graphite hover:text-ink"
-        >
-          Close
-        </button>
-      </div>
-      {error ? (
-        <p className="mt-4 text-sm text-flag">{error}</p>
-      ) : content === null ? (
-        <p className="mt-4 text-sm text-graphite">Loading…</p>
-      ) : (
-        <div className="mt-4 text-sm leading-relaxed text-ink whitespace-pre-wrap">
-          {highlight ? (
-            <>
-              {content.slice(0, highlight.sentenceStart)}
-              <mark className="bg-signal/20 px-0.5">
-                {content.slice(highlight.sentenceStart, highlight.sentenceEnd)}
-              </mark>
-              {content.slice(highlight.sentenceEnd)}
-            </>
-          ) : (
-            content
-          )}
-        </div>
-      )}
-      {highlight && (
-        <p className="mt-2 font-mono text-xs text-graphite">
-          p.{highlight.page}
-        </p>
-      )}
     </div>
   );
 }

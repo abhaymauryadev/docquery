@@ -1,9 +1,13 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
-import { signupSchema } from "@/lib/validators";
+import {
+  signupSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "@/lib/validators";
 import { randomBytes } from "crypto";
 
 export async function signupAction(formData: FormData) {
@@ -65,6 +69,70 @@ export async function verifyEmailAction(token: string, email: string) {
   await db.user.update({
     where: { email },
     data: { emailVerified: new Date() },
+  });
+
+  await db.verificationToken.delete({
+    where: {
+      identifier_token: { identifier: email, token },
+    },
+  });
+
+  return { success: true };
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const user = await db.user.findUnique({
+    where: { email: parsed.data.email },
+  });
+
+  // Always report success — don't reveal whether an email is registered.
+  if (user) {
+    const token = randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+    await db.verificationToken.create({
+      data: { identifier: parsed.data.email, token, expires },
+    });
+
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(parsed.data.email)}`;
+    await sendPasswordResetEmail(parsed.data.email, resetUrl);
+  }
+
+  return { success: true };
+}
+
+export async function resetPasswordAction(
+  token: string,
+  email: string,
+  formData: FormData,
+) {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const record = await db.verificationToken.findFirst({
+    where: { identifier: email, token },
+  });
+
+  if (!record || record.expires < new Date()) {
+    return { error: "Invalid or expired reset link." };
+  }
+
+  const passwordHash = await hashPassword(parsed.data.password);
+
+  await db.user.update({
+    where: { email },
+    data: { passwordHash },
   });
 
   await db.verificationToken.delete({

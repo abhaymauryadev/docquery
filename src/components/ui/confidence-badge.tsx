@@ -1,15 +1,16 @@
 import type { Confidence } from "@/types";
 import { cn } from "@/lib/utils";
 
-const config: Record<
+export const CONFIDENCE_CONFIG: Record<
   Confidence,
-  { label: string; color: string; dot: string }
+  { label: string; color: string; dot: string; hex: string }
 > = {
-  HIGH: { label: "High", color: "text-verified", dot: "bg-verified" },
-  MEDIUM: { label: "Medium", color: "text-steady", dot: "bg-steady" },
-  LOW: { label: "Low", color: "text-flag", dot: "bg-flag" },
-  NOT_FOUND: { label: "Not found", color: "text-flag", dot: "bg-flag" },
+  HIGH: { label: "High", color: "text-verified", dot: "bg-verified", hex: "var(--color-verified)" },
+  MEDIUM: { label: "Medium", color: "text-steady", dot: "bg-steady", hex: "var(--color-steady)" },
+  LOW: { label: "Low", color: "text-flag", dot: "bg-flag", hex: "var(--color-flag)" },
+  NOT_FOUND: { label: "Not found", color: "text-flag", dot: "bg-flag", hex: "var(--color-flag)" },
 };
+const config = CONFIDENCE_CONFIG;
 
 export function ConfidenceBadge({
   confidence,

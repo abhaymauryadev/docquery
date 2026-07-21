@@ -19,6 +19,14 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+  password: passwordSchema,
+});
+
 export const workspaceCreateSchema = z.object({
   name: z.string().min(1, "Workspace name is required.").max(100).trim(),
 });

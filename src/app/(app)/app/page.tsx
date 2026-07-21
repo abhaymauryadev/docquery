@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FolderOpen } from "lucide-react";
+import { DashboardPalette } from "@/components/dashboard/dashboard-palette";
 
 export default async function AppDashboardPage() {
   const session = await auth();
@@ -30,12 +31,20 @@ export default async function AppDashboardPage() {
         <h1 className="font-display text-2xl font-semibold text-ink">
           Your workspaces
         </h1>
-        <Button asChild>
-          <Link href="/app/new">
-            <Plus className="h-4 w-4" />
-            New workspace
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <DashboardPalette
+            workspaces={memberships.map((m) => ({
+              id: m.workspace.id,
+              name: m.workspace.name,
+            }))}
+          />
+          <Button asChild>
+            <Link href="/app/new">
+              <Plus className="h-4 w-4" />
+              New workspace
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {memberships.length === 0 ? (

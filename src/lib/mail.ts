@@ -31,3 +31,26 @@ export async function sendVerificationEmail(
     throw new Error(`Failed to send verification email: ${error.message}`);
   }
 }
+
+export async function sendPasswordResetEmail(
+  email: string,
+  resetUrl: string,
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`Reset password: ${resetUrl}`);
+    return;
+  }
+
+  const from = process.env.EMAIL_FROM ?? "DocQuery <onboarding@resend.dev>";
+
+  const { error } = await getResend().emails.send({
+    from,
+    to: email,
+    subject: "Reset your DocQuery password",
+    html: `<p>Someone requested a password reset for this account. If this was you, choose a new password:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>`,
+  });
+
+  if (error) {
+    throw new Error(`Failed to send password reset email: ${error.message}`);
+  }
+}

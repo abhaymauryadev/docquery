@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { signupAction } from "@/server/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,29 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle className="font-display text-2xl">Create account</CardTitle>
         </CardHeader>
+        <div className="mb-4 flex gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => signIn("google", { callbackUrl: "/app" })}
+          >
+            Google
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => signIn("github", { callbackUrl: "/app" })}
+          >
+            GitHub
+          </Button>
+        </div>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-graphite/15" />
+          <span className="text-xs text-graphite">or</span>
+          <div className="h-px flex-1 bg-graphite/15" />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="mb-1 block text-sm text-graphite">

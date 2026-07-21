@@ -43,6 +43,29 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="font-display text-2xl">Sign in</CardTitle>
         </CardHeader>
+        <div className="mb-4 flex gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => signIn("google", { callbackUrl: "/app" })}
+          >
+            Google
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex-1"
+            onClick={() => signIn("github", { callbackUrl: "/app" })}
+          >
+            GitHub
+          </Button>
+        </div>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-graphite/15" />
+          <span className="text-xs text-graphite">or</span>
+          <div className="h-px flex-1 bg-graphite/15" />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="mb-1 block text-sm text-graphite">
@@ -51,12 +74,17 @@ export default function LoginPage() {
             <Input id="email" name="email" type="email" required />
           </div>
           <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm text-graphite"
-            >
-              Password
-            </label>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="password" className="text-sm text-graphite">
+                Password
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs text-signal hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input id="password" name="password" type="password" required />
           </div>
           {error && (
@@ -68,22 +96,6 @@ export default function LoginPage() {
             {loading ? "Signing in…" : "Sign in"}
           </Button>
         </form>
-        <div className="mt-4 flex gap-2">
-          <Button
-            variant="secondary"
-            className="flex-1"
-            onClick={() => signIn("google", { callbackUrl: "/app" })}
-          >
-            Google
-          </Button>
-          <Button
-            variant="secondary"
-            className="flex-1"
-            onClick={() => signIn("github", { callbackUrl: "/app" })}
-          >
-            GitHub
-          </Button>
-        </div>
         <p className="mt-4 text-center text-sm text-graphite">
           No account?{" "}
           <Link href="/signup" className="text-signal hover:underline">
